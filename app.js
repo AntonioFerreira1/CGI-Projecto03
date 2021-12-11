@@ -12,7 +12,7 @@ import * as PYRAMID from '../../libs/pyramid.js';
 
 /**
  * @author António Ferreira 58340 
- * @author Tiago Fernandes ????
+ * @author Tiago Fernandes 57677
  */
 
 /** @type WebGLRenderingContext */
@@ -24,11 +24,15 @@ let mode;               // Drawing mode (gl.LINES or gl.TRIANGLES)
 let mView;
 
 
+//
+
 let options = {
     backfaceCulling : true,
     depthTest : true,
     showLights : true
 }
+
+// Camera settings
 
 let cam = {
     fovy : 45,
@@ -37,6 +41,21 @@ let cam = {
     eye : vec3(0, 0, 5),    
     at : vec3(0, 0, 0),
     up : vec3(0, 1, 0)
+}
+
+// Shape of object to be drawn
+
+let shape = {
+    object: 's'
+}
+
+// How the object looks
+
+let material = {
+    Ka: [0,25,0],
+    Kd: [0,100,0],
+    Ks: [255,255,255],
+    shininess: 50
 }
 
 
@@ -128,10 +147,33 @@ function setup(shaders)
         lightsFolder.open();
 
 
+    const gui2 = new dat.GUI();
+
+    gui2.add(shape, "object", {Sphere: 's', Cube: 'c', Torus: 't', Cylinder: 'cy', Pyramid: 'p'});
+
+    const materialFolder = gui2.addFolder("material");
+
+    materialFolder.addColor(material, "Ka");
+    materialFolder.addColor(material, "Kd");
+    materialFolder.addColor(material, "Ks");
+
+    materialFolder.add(material, "shininess");
+
+    materialFolder.open();
 
 
+    // Draws the object depending on the shape selected in dropdown list
 
-
+    function drawShape() {
+        switch(shape.object) {
+            case 's': SPHERE.draw(gl, program, mode); break;
+            case 'c': CUBE.draw(gl, program, mode); break;
+            case 't': TORUS.draw(gl, program, mode); break;
+            case 'cy': CYLINDER.draw(gl, program, mode); break;
+            case 'p': PYRAMID.draw(gl, program, mode); break;
+            default: break;
+        }
+    }
 
     function render()
     {
@@ -148,10 +190,11 @@ function setup(shaders)
 
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
 
-
         pushMatrix();
             uploadModelView();
-            CUBE.draw(gl, program, mode);
+            pushMatrix()
+                drawShape();
+            popMatrix();
         popMatrix();
     }
 
