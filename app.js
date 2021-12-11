@@ -23,6 +23,7 @@ let speed = 1/60.0;     // Speed (how many days added to time on each render pas
 let mode;               // Drawing mode (gl.LINES or gl.TRIANGLES)
 let mView;
 
+const MAX_RGB = 255;
 
 let options = {
     backfaceCulling : true,
@@ -52,7 +53,7 @@ let shape = {
 let material = {
     Ka: [0,25,0],
     Kd: [0,100,0],
-    Ks: [255,255,255],
+    Ks: [MAX_RGB,MAX_RGB,MAX_RGB],
     shininess: 50
 }
 
@@ -161,15 +162,11 @@ function setup(shaders)
 
     materialFolder.open();
 
-    console.log(material.Ka[0])
-    console.log(material.Ka[1])
-    console.log(material.Ka[2])
-
     /**
      * Draws the base of the deformed cube which works as a base to the object
      */
     function drawBase() {
-        gl.uniform4f(fColor, material.Kd[0]/255, material.Kd[1]/255, material.Kd[2]/255, 1.0);
+        gl.uniform4f(fColor, material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB, 1.0);
         pushMatrix();
             multTranslation([0, -0.55, 0]);
             multScale([3, 0.1, 3]);
@@ -183,7 +180,7 @@ function setup(shaders)
      * Draws the object depending on the shape selected in dropdown list
      */
     function drawShape() {
-        gl.uniform4f(fColor, material.Ka[0]/255, material.Ka[1]/255, material.Ka[2]/255, 1.0);
+        gl.uniform4f(fColor, material.Ka[0]/MAX_RGB, material.Ka[1]/MAX_RGB, material.Ka[2]/MAX_RGB, 1.0);
         pushMatrix()
             uploadModelView();
             switch(shape.object) {
