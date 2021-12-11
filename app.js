@@ -24,8 +24,6 @@ let mode;               // Drawing mode (gl.LINES or gl.TRIANGLES)
 let mView;
 
 
-//
-
 let options = {
     backfaceCulling : true,
     depthTest : true,
@@ -73,7 +71,7 @@ function setup(shaders)
 
     let mProjection = perspective(cam.fovy, aspect, cam.near, cam.far);
 
-    mode = gl.LINES; 
+    mode = gl.TRIANGLES; 
 
     mView = lookAt(cam.eye, cam.at, cam.up);
     loadMatrix(mView);
@@ -82,6 +80,8 @@ function setup(shaders)
     window.addEventListener("resize", resize_canvas);
 
     gl.clearColor(0.71875, 0.83984375, 0.91015625, 1.0);
+
+    const fColor = gl.getUniformLocation(program, "fColor");
     
     SPHERE.init(gl);
     CUBE.init(gl);
@@ -127,7 +127,7 @@ function setup(shaders)
 
     const eyeFolder = cameraFolder.addFolder("Eye");
         eyeFolder.add(cam.eye, "0", -15, 15, 1);
-        eyeFolder.add(cam.eye, "1", -15, 15, 1);
+        eyeFolder.add(cam.eye, "1", -15, 15, 0.1);
         eyeFolder.add(cam.eye, "2", -16, 15, 1);
         eyeFolder.open();
 
@@ -161,18 +161,40 @@ function setup(shaders)
 
     materialFolder.open();
 
+    console.log(material.Ka[0])
+    console.log(material.Ka[1])
+    console.log(material.Ka[2])
 
-    // Draws the object depending on the shape selected in dropdown list
+    /**
+     * Draws the base of the deformed cube which works as a base to the object
+     */
+    function drawBase() {
+        gl.uniform4f(fColor, material.Kd[0]/255, material.Kd[1]/255, material.Kd[2]/255, 1.0);
+        pushMatrix();
+            multTranslation([0, -0.55, 0]);
+            multScale([3, 0.1, 3]);
+            uploadModelView();
+            CUBE.draw(gl, program, mode);
+        popMatrix();
+    }
 
+
+    /**
+     * Draws the object depending on the shape selected in dropdown list
+     */
     function drawShape() {
-        switch(shape.object) {
-            case 's': SPHERE.draw(gl, program, mode); break;
-            case 'c': CUBE.draw(gl, program, mode); break;
-            case 't': TORUS.draw(gl, program, mode); break;
-            case 'cy': CYLINDER.draw(gl, program, mode); break;
-            case 'p': PYRAMID.draw(gl, program, mode); break;
-            default: break;
-        }
+        gl.uniform4f(fColor, material.Ka[0]/255, material.Ka[1]/255, material.Ka[2]/255, 1.0);
+        pushMatrix()
+            uploadModelView();
+            switch(shape.object) {
+                case 's': SPHERE.draw(gl, program, mode); break;
+                case 'c': CUBE.draw(gl, program, mode); break;
+                case 't': TORUS.draw(gl, program, mode); break;
+                case 'cy': CYLINDER.draw(gl, program, mode); break;
+                case 'p': PYRAMID.draw(gl, program, mode); break;
+                default: break;
+            }
+        popMatrix();
     }
 
     function render()
@@ -191,10 +213,10 @@ function setup(shaders)
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
 
         pushMatrix();
-            uploadModelView();
-            pushMatrix()
-                drawShape();
-            popMatrix();
+            drawBase();
+        popMatrix();
+        pushMatrix()
+            drawShape();
         popMatrix();
     }
 
