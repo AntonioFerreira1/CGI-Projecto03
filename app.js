@@ -25,6 +25,8 @@ let mView;
 
 const MAX_RGB = 255;
 
+let lights = [];        // Stores the lights created in the program
+
 let options = {
     backfaceCulling : true,
     depthTest : true,
@@ -90,8 +92,9 @@ function setup(shaders)
     CYLINDER.init(gl);
     PYRAMID.init(gl);
 
-    gl.enable(gl.DEPTH_TEST);   // Enables Z-buffer depth test
-
+    gl.cullFace(gl.BACK);
+    gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST)    // Enables Z-buffer depth test
     
     window.requestAnimationFrame(render);
 
@@ -114,8 +117,12 @@ function setup(shaders)
     const gui = new dat.GUI();
 
     const optionsFolder = gui.addFolder("Options");
-        optionsFolder.add(options, "backfaceCulling");
-        optionsFolder.add(options, "depthTest");
+        optionsFolder.add(options, "backfaceCulling").onChange(function () {
+            (options.backfaceCulling) ? gl.enable(gl.CULL_FACE) : gl.disable(gl.CULL_FACE);
+        });
+        optionsFolder.add(options, "depthTest").onChange(function () {
+            (options.depthTest) ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST);
+        });
         optionsFolder.add(options, "showLights");
         optionsFolder.open();
 
@@ -161,6 +168,24 @@ function setup(shaders)
     materialFolder.add(material, "shininess");
 
     materialFolder.open();
+
+    
+    /**
+     * Creates a new light adding it to the GUI
+     */
+    document.addEventListener("click", function(event) {
+        // TODO
+
+        const newLight = lightsFolder.addFolder("Light" + (lights.length+1));
+        lights.push(newLight);
+
+        let x = event.clientX;
+        let y = event.clientY;
+
+        const position = newLight.addFolder("position");
+
+
+    })
 
     /**
      * Draws the base of the deformed cube which works as a base to the object
