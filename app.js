@@ -74,7 +74,7 @@ function setup(shaders)
 
     let mProjection = perspective(cam.fovy, aspect, cam.near, cam.far);
 
-    mode = gl.LINES; 
+    mode = gl.TRIANGLES; 
 
     mView = lookAt(cam.eye, cam.at, cam.up);
     loadMatrix(mView);
@@ -214,7 +214,7 @@ function setup(shaders)
     function drawBase() {
         gl.uniform4f(fColor, material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB, 1.0);
         pushMatrix();
-            multTranslation([0, -0.5, 0]);
+            multTranslation([0, -0.55, 0]);
             multScale([3, 0.1, 3]);
             uploadModelView();
             CUBE.draw(gl, program, mode);
