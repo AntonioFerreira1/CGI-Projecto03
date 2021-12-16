@@ -25,7 +25,7 @@ let mView;
 
 const MAX_RGB = 255;
 
-let lights = [];        // Stores the lights created in the program
+let lightsArray = [];        // Stores the lightsArray created in the program
 
 let options = {
     backfaceCulling : true,
@@ -74,7 +74,7 @@ function setup(shaders)
 
     let mProjection = perspective(cam.fovy, aspect, cam.near, cam.far);
 
-    mode = gl.TRIANGLES; 
+    mode = gl.LINES; 
 
     mView = lookAt(cam.eye, cam.at, cam.up);
     loadMatrix(mView);
@@ -173,19 +173,40 @@ function setup(shaders)
     /**
      * Creates a new light adding it to the GUI
      */
-    document.addEventListener("click", function(event) {
+    document.addEventListener('keypress', function(event) {
         // TODO
+        if(event.key === " "){
+            
+            let light = {
+                x: 0,
+                y: 0,
+                z: 0,
+                ambient: [0, 0, 0],
+                diffuse: [0, 0, 0],
+                specular: [0, 0, 0],
+                directional : false,
+                active: false
+            };
+            
+            lightsArray.push(light);
 
-        const newLight = lightsFolder.addFolder("Light" + (lights.length+1));
-        lights.push(newLight);
+            const newLight = lightsFolder.addFolder("Light" + lightsArray.length);
 
-        let x = event.clientX;
-        let y = event.clientY;
-
-        const position = newLight.addFolder("position");
+            /*let x = event.clientX;
+            let y = event.clientY;*/
 
 
-    })
+            const position = newLight.addFolder("position");
+                position.add(light, "x");
+                position.add(light, "y");
+                position.add(light, "z");
+                position.addColor(light, "ambient");
+                position.addColor(light, "diffuse");
+                position.addColor(light, "specular");
+                position.add(light, "directional");
+                position.add(light, "active");
+        }
+    });
 
     /**
      * Draws the base of the deformed cube which works as a base to the object
@@ -193,7 +214,7 @@ function setup(shaders)
     function drawBase() {
         gl.uniform4f(fColor, material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB, 1.0);
         pushMatrix();
-            multTranslation([0, -0.55, 0]);
+            multTranslation([0, -0.5, 0]);
             multScale([3, 0.1, 3]);
             uploadModelView();
             CUBE.draw(gl, program, mode);
