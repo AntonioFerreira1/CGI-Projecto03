@@ -134,9 +134,9 @@ function setup(shaders)
         cameraFolder.open();
 
     const eyeFolder = cameraFolder.addFolder("Eye");
-        eyeFolder.add(cam.eye, "0", -15, 15, 1);
+        eyeFolder.add(cam.eye, "0", -15, 15, 0.1);
         eyeFolder.add(cam.eye, "1", -15, 15, 0.1);
-        eyeFolder.add(cam.eye, "2", -16, 15, 1);
+        eyeFolder.add(cam.eye, "2", -16, 15, 0.1);
         eyeFolder.open();
 
     const atFolder = cameraFolder.addFolder("At");
@@ -211,7 +211,13 @@ function setup(shaders)
             switch(shape.object) {
                 case 's': SPHERE.draw(gl, program, mode); break;
                 case 'c': CUBE.draw(gl, program, mode); break;
-                case 't': TORUS.draw(gl, program, mode); break;
+                case 't':
+                    pushMatrix();
+                        multTranslation([0, -0.3, 0]);
+                        uploadModelView();
+                        TORUS.draw(gl, program, mode);
+                    popMatrix();
+                    break;
                 case 'cy': CYLINDER.draw(gl, program, mode); break;
                 case 'p': PYRAMID.draw(gl, program, mode); break;
                 default: break;
