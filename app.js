@@ -128,27 +128,27 @@ function setup(shaders)
 
 
     const cameraFolder = gui.addFolder("Camera");
-        cameraFolder.add(cam, "fovy", 0, 90, 1);
-        cameraFolder.add(cam, "near", 0.1, 5, 1);
-        cameraFolder.add(cam, "far", 6, 20, 1);
+        cameraFolder.add(cam, "fovy", 0, 90);
+        cameraFolder.add(cam, "near", 0.1, 5);
+        cameraFolder.add(cam, "far", 6, 20);
         cameraFolder.open();
 
     const eyeFolder = cameraFolder.addFolder("Eye");
-        eyeFolder.add(cam.eye, "0", -15, 15, 0.1);
-        eyeFolder.add(cam.eye, "1", -15, 15, 0.1);
-        eyeFolder.add(cam.eye, "2", -16, 15, 0.1);
+        eyeFolder.add(cam.eye, "0");
+        eyeFolder.add(cam.eye, "1");
+        eyeFolder.add(cam.eye, "2");
         eyeFolder.open();
 
     const atFolder = cameraFolder.addFolder("At");
-        atFolder.add(cam.at, "0", 0, 90, 1);
-        atFolder.add(cam.at, "1", 0, 90, 1);
-        atFolder.add(cam.at, "2", 0, 90, 1);
+        atFolder.add(cam.at, "0");
+        atFolder.add(cam.at, "1");
+        atFolder.add(cam.at, "2");
         atFolder.open();
 
     const upFolder = cameraFolder.addFolder("Up");
-        upFolder.add(cam.up, "0", 0, 90, 1);
-        upFolder.add(cam.up, "1", 0, 90, 1);
-        upFolder.add(cam.up, "2", 0, 90, 1);
+        upFolder.add(cam.up, "0", -1, 1);
+        upFolder.add(cam.up, "1", -1, 1);
+        upFolder.add(cam.up, "2", -1, 1);
         upFolder.open();
 
     const lightsFolder = gui.addFolder("Lights");
