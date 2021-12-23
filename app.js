@@ -95,9 +95,9 @@ function setup(shaders)
 
     const fColor = gl.getUniformLocation(program, "fColor");
 
-    const uKaOfMaterial = gl.getUniformLocation(program, "uMaterial.Ka");
-    const uKdOfMaterial = gl.getUniformLocation(program, "uMaterial.Kd");
-    const uKsOfMaterial = gl.getUniformLocation(program, "uMaterial.Ks");
+    const uKa = gl.getUniformLocation(program, "uMaterial.Ka");
+    const uKd = gl.getUniformLocation(program, "uMaterial.Kd");
+    const uKs = gl.getUniformLocation(program, "uMaterial.Ks");
     const uShininess = gl.getUniformLocation(program, "uMaterial.shininess");
     
     SPHERE.init(gl);
@@ -258,10 +258,12 @@ function setup(shaders)
 
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
 
-        gl.uniform3fv(uKaOfMaterial, vec3(material.Ka[0]/MAX_RGB, material.Ka[1]/MAX_RGB, material.Ka[2]/MAX_RGB));
-        gl.uniform3fv(uKdOfMaterial, vec3(material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB));
-        gl.uniform3fv(uKsOfMaterial, vec3(material.Ks[0]/MAX_RGB, material.Ks[1]/MAX_RGB, material.Ks[2]/MAX_RGB));
+        gl.uniform3fv(uKa, vec3(material.Ka[0]/MAX_RGB, material.Ka[1]/MAX_RGB, material.Ka[2]/MAX_RGB));
+        gl.uniform3fv(uKd, vec3(material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB));
+        gl.uniform3fv(uKs, vec3(material.Ks[0]/MAX_RGB, material.Ks[1]/MAX_RGB, material.Ks[2]/MAX_RGB));
         gl.uniform1f(uShininess, material.shininess);
+
+       
 
         pushMatrix();
             drawBase();
@@ -270,10 +272,16 @@ function setup(shaders)
             drawShape();
         popMatrix();
     }
-
+    
+    /*for (let i = 0; i < lightsArray.length; i++) {
+        const uLightPos = gl.get
+        const uIa = gl.getUniformLocation(program, "uLight["+i+"].Ia");
+        const uId = gl.getUniformLocation(program, "uLight["+i+"].Ia");
+        const uIs = gl.getUniformLocation(program, "uLight["+i+"].Ia");
+        const 
+    }*/
 
 }
-
 
 
 const urls = ["shader.vert", "shader.frag"];
