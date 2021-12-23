@@ -20,10 +20,10 @@ let gl;
 
 let time = 0;           // Global simulation time in days
 let speed = 1/60.0;     // Speed (how many days added to time on each render pass
-let mode;               // Drawing mode (gl.LINES or gl.TRIANGLES)
 let mView;
 
 const MAX_RGB = 255;
+const MAX_LIGHTS = 8;
 
 let lightsArray = [];        // Stores the lightsArray created in the program
 
@@ -56,8 +56,19 @@ let material = {
     Ka: [0,25,0],
     Kd: [0,100,0],
     Ks: [MAX_RGB,MAX_RGB,MAX_RGB],
-    shininess: 50
+    shininess: 50.0
 }
+
+let light = {
+    x: 0,
+    y: 0,
+    z: 0,
+    ambient: [0, 0, 0],
+    diffuse: [0, 0, 0],
+    specular: [0, 0, 0],
+    directional : false,
+    active: false
+};
 
 
 function setup(shaders)
@@ -74,8 +85,6 @@ function setup(shaders)
 
     let mProjection = perspective(cam.fovy, aspect, cam.near, cam.far);
 
-    mode = gl.TRIANGLES; 
-
     mView = lookAt(cam.eye, cam.at, cam.up);
     loadMatrix(mView);
 
@@ -85,6 +94,11 @@ function setup(shaders)
     gl.clearColor(0.71875, 0.83984375, 0.91015625, 1.0);
 
     const fColor = gl.getUniformLocation(program, "fColor");
+
+    const uKaOfMaterial = gl.getUniformLocation(program, "uMaterial.Ka");
+    const uKdOfMaterial = gl.getUniformLocation(program, "uMaterial.Kd");
+    const uKsOfMaterial = gl.getUniformLocation(program, "uMaterial.Ks");
+    const uShininess = gl.getUniformLocation(program, "uMaterial.shininess");
     
     SPHERE.init(gl);
     CUBE.init(gl);
@@ -152,6 +166,8 @@ function setup(shaders)
         upFolder.open();
 
     const lightsFolder = gui.addFolder("Lights");
+        let addLightButton = { Add:addLight}
+        lightsFolder.add(addLightButton, "Add");
         lightsFolder.open();
 
 
@@ -173,28 +189,11 @@ function setup(shaders)
     /**
      * Creates a new light adding it to the GUI
      */
-    document.addEventListener('keypress', function(event) {
-        // TODO
-        if(event.key === " "){
-            
-            let light = {
-                x: 0,
-                y: 0,
-                z: 0,
-                ambient: [0, 0, 0],
-                diffuse: [0, 0, 0],
-                specular: [0, 0, 0],
-                directional : false,
-                active: false
-            };
-            
+    function addLight(event) {
+        if (lightsArray.length < MAX_LIGHTS) {
             lightsArray.push(light);
 
             const newLight = lightsFolder.addFolder("Light" + lightsArray.length);
-
-            /*let x = event.clientX;
-            let y = event.clientY;*/
-
 
             const position = newLight.addFolder("position");
                 position.add(light, "x");
@@ -206,18 +205,17 @@ function setup(shaders)
                 position.add(light, "directional");
                 position.add(light, "active");
         }
-    });
+    }
 
     /**
      * Draws the base of the deformed cube which works as a base to the object
      */
     function drawBase() {
-        gl.uniform4f(fColor, material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB, 1.0);
         pushMatrix();
             multTranslation([0, -0.55, 0]);
             multScale([3, 0.1, 3]);
             uploadModelView();
-            CUBE.draw(gl, program, mode);
+            CUBE.draw(gl, program, gl.TRIANGLES);
         popMatrix();
     }
 
@@ -226,21 +224,20 @@ function setup(shaders)
      * Draws the object depending on the shape selected in dropdown list
      */
     function drawShape() {
-        gl.uniform4f(fColor, material.Ka[0]/MAX_RGB, material.Ka[1]/MAX_RGB, material.Ka[2]/MAX_RGB, 1.0);
         pushMatrix()
             uploadModelView();
             switch(shape.object) {
-                case 's': SPHERE.draw(gl, program, mode); break;
-                case 'c': CUBE.draw(gl, program, mode); break;
+                case 's': SPHERE.draw(gl, program, gl.TRIANGLES); break;
+                case 'c': CUBE.draw(gl, program, gl.TRIANGLES); break;
                 case 't':
-                    pushMatrix();
-                        multTranslation([0, -0.3, 0]);
-                        uploadModelView();
-                        TORUS.draw(gl, program, mode);
-                    popMatrix();
+                    //pushMatrix();
+                        //multTranslation([0, -0.3, 0]);
+                        //uploadModelView();
+                        TORUS.draw(gl, program, gl.TRIANGLES);
+                    //popMatrix();
                     break;
-                case 'cy': CYLINDER.draw(gl, program, mode); break;
-                case 'p': PYRAMID.draw(gl, program, mode); break;
+                case 'cy': CYLINDER.draw(gl, program, gl.TRIANGLES); break;
+                case 'p': PYRAMID.draw(gl, program, gl.TRIANGLES); break;
                 default: break;
             }
         popMatrix();
@@ -260,6 +257,11 @@ function setup(shaders)
         gl.useProgram(program);
 
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
+
+        gl.uniform3fv(uKaOfMaterial, vec3(material.Ka[0]/MAX_RGB, material.Ka[1]/MAX_RGB, material.Ka[2]/MAX_RGB));
+        gl.uniform3fv(uKdOfMaterial, vec3(material.Kd[0]/MAX_RGB, material.Kd[1]/MAX_RGB, material.Kd[2]/MAX_RGB));
+        gl.uniform3fv(uKsOfMaterial, vec3(material.Ks[0]/MAX_RGB, material.Ks[1]/MAX_RGB, material.Ks[2]/MAX_RGB));
+        gl.uniform1f(uShininess, material.shininess);
 
         pushMatrix();
             drawBase();
