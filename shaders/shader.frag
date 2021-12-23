@@ -1,7 +1,5 @@
 precision highp float;
 
-uniform vec4 fColor;
-
 const int MAX_LIGHTS = 8;
 
 struct LightInfo {
@@ -20,12 +18,15 @@ struct MaterialInfo {
     float shininess;
 };
 
+attribute vec4 vNormal; // vertex normal in modelling coordinates
+
 uniform int uNLights; // Effective number of lights used
 
 uniform LightInfo uLight[MAX_LIGHTS]; // The array of lights present in the scene
 uniform MaterialInfo uMaterial;  // The material of the object being drawn
 
 uniform mat4 mViewNormals; // view transformation (for vectors)
+uniform mat4 mNormals; // model-view transformation for normals
 uniform mat4 mView; // view transformation (for points)
 
 varying fPosC;

@@ -1,8 +1,6 @@
 attribute vec4 vPosition;
-attribute vec4 vNormal;
 
 uniform mat4 mModelView; // model-view transformation
-uniform mat4 mNormals; // model-view transformation for normals
 uniform mat4 mProjection; // projection matrix
 
 varying vec3 fPosC;
