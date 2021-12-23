@@ -34,17 +34,20 @@ uniform mat4 mViewNormals; // view transformation (for vectors)
 uniform mat4 mView; // view transformation (for points)
 
 varying fPosC;
-varying fNormal;
-varying fViewer;
 
 /*
 Ciclo que calcula o somatorio do enunciado:
 I = ambientColor + diffuse + specular
 */
 void main() {
+    vec4 illumModel;
 
     for (int i = 0; i < MAX_LIGHTS; i++) {
         if (i == uNLights) break;
+
+        vec3 ambientColor = uLight[i].Ia * uMaterial.Ka; // Ia*Ka
+        vec3 diffuseColor = uLight[i].Id * uMaterial.Kd; // Id*Kd
+        vec3 specularColor = uLight[i].Is * uMaterial.Ks; // Is*Ks
 
         vec3 L;
 
@@ -53,11 +56,28 @@ void main() {
             L = normalize((mViewNormals * uLight[i].pos).xyz);
         else
             L = normalize((mView * uLight[i].pos).xyz - fPosC);
+«
 
+        // compute normal in camera frame
+        vec3 N = normalize((mNormals * vNormal).xyz);
 
-        vec3 N = normalize(fNoramL)
+        // compute the view vector
+        vec3 V = normalize(-fPosC); // perspective projection
 
+        vec3 R = reflect(-L,N);
+
+        float diffuseFactor = max( dot(L,N), 0.0 );
+        vec3 diffuse = diffuseFactor * diffuseColor;
+
+        float specularFactor = pow( max(dot(N,H), 0.0), uMaterial.shininess );
+        specular = specularFactor * specularColor;
+
+        // add the 3 components to the Illumination model
+        // (ambient, diffuse, specular)
+
+        illumModel += vec4(ambientColor + diffuse + specular, 1.0);
     }
 
+    gl_FragColor = illumModel;
 
 }
