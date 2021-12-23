@@ -1,8 +1,3 @@
-/*
-PROVAVELMENTE  MAL
-APAGA SE FOR PRECISO
-*/
-
 precision highp float;
 
 uniform vec4 fColor;
@@ -35,13 +30,14 @@ uniform mat4 mView; // view transformation (for points)
 
 varying fPosC;
 
-/*
-Ciclo que calcula o somatorio do enunciado:
-I = ambientColor + diffuse + specular
-*/
+
 void main() {
     vec4 illumModel;
 
+    /*
+    Ciclo que calcula o somatorio das componentes da luz (ambient + diffuse + specular):
+    I = ambientColor + diffuse + specular
+    */
     for (int i = 0; i < MAX_LIGHTS; i++) {
         if (i == uNLights) break;
 
