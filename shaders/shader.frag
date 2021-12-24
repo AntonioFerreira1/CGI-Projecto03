@@ -49,7 +49,7 @@ void main() {
             vec3 L;
 
             // compute light vector in camera frame
-            if (!uLight[i].isDirectional) 
+            if (!uLight[i].isDirectional    ) 
                 L = normalize((mViewNormals * vec4(uLight[i].pos, 0.0)).xyz);
             else
                 L = normalize((mView * vec4(uLight[i].pos, 0.0)).xyz - fPosC);

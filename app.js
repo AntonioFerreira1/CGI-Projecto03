@@ -59,16 +59,6 @@ let material = {
     shininess: 50.0
 }
 
-let light = {
-    x: 0,
-    y: 0,
-    z: 0,
-    ambient: [0, 0, 0],
-    diffuse: [0, 0, 0],
-    specular: [0, 0, 0],
-    directional : false,
-    active: false
-};
 
 
 function setup(shaders)
@@ -82,6 +72,7 @@ function setup(shaders)
     gl = setupWebGL(canvas);
 
     let program = buildProgramFromSources(gl, shaders["shader.vert"], shaders["shader.frag"]);
+    let programLights = buildProgramFromSources(gl, shaders["shaderLight.vert"], shaders["shaderLight.frag"]);
 
     let mProjection = perspective(cam.fovy, aspect, cam.near, cam.far);
 
@@ -126,7 +117,6 @@ function setup(shaders)
 
     function uploadModelView(){
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
-
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mNormals"), false, flatten(inverse(transpose(modelView()))));
     }
 
@@ -193,6 +183,17 @@ function setup(shaders)
      */
     function addLight(event) {
         if (lightsArray.length < MAX_LIGHTS) {
+            let light = {
+                x: 0,
+                y: 0,
+                z: 0,
+                ambient: [0, 0, 0],
+                diffuse: [0, 0, 0],
+                specular: [0, 0, 0],
+                directional : false,
+                active: true
+            };
+
             lightsArray.push(light);
 
             const newLight = lightsFolder.addFolder("Light" + lightsArray.length);
@@ -237,6 +238,19 @@ function setup(shaders)
                 default: break;
             }
         popMatrix();
+    }
+
+    function drawLights(){
+        for(let i = 0; i < lightsArray.length; i++){
+            pushMatrix();
+                
+                multTranslation([lightsArray[i].x, lightsArray[i].y, lightsArray[i].z]);
+                multScale([0.05, 0.05, 0.05]);
+                gl.uniformMatrix4fv(gl.getUniformLocation(programLights, "mModelView"), false, flatten(modelView()));   
+                SPHERE.draw(gl, programLights, gl.TRIANGLES);
+                
+            popMatrix();
+        }
     }
 
     function render()
@@ -293,11 +307,19 @@ function setup(shaders)
         pushMatrix()
             drawShape();
         popMatrix();
+        
+        gl.useProgram(programLights);
+        gl.uniformMatrix4fv(gl.getUniformLocation(programLights, "mModelView"), false, flatten(modelView()));
+        gl.uniformMatrix4fv(gl.getUniformLocation(programLights, "mProjection"), false, flatten(mProjection));
+
+        drawLights();
+
+
     }
     
 
 }
 
 
-const urls = ["shader.vert", "shader.frag"];
+const urls = ["shader.vert", "shader.frag", "shaderLight.vert", "shaderLight.frag"];
 loadShadersFromURLS(urls).then(shaders => setup(shaders))
