@@ -32,7 +32,7 @@ varying vec3 fNormal;
 
 
 void main() {
-    vec4 illumModel;
+    vec3 illumModel;
 
     /*
     Ciclo que calcula o somatorio das componentes da luz (ambient + diffuse + specular):
@@ -41,38 +41,42 @@ void main() {
     for (int i = 0; i < MAX_LIGHTS; i++) {
         if (i == uNLights) break;
 
-        vec3 ambientColor = uLight[i].Ia * uMaterial.Ka; // Ia*Ka
-        vec3 diffuseColor = uLight[i].Id * uMaterial.Kd; // Id*Kd
-        vec3 specularColor = uLight[i].Is * uMaterial.Ks; // Is*Ks
+        if(uLight[i].isActive) {
+            vec3 ambientColor = uLight[i].Ia * uMaterial.Ka; // Ia*Ka
+            vec3 diffuseColor = uLight[i].Id * uMaterial.Kd; // Id*Kd
+            vec3 specularColor = uLight[i].Is * uMaterial.Ks; // Is*Ks
 
-        vec3 L;
+            vec3 L;
 
-        // compute light vector in camera frame
-        if (!uLight[i].isDirectional) 
-            L = normalize((mViewNormals * vec4(uLight[i].pos, 0.0)).xyz);
-        else
-            L = normalize((mView * vec4(uLight[i].pos, 0.0)).xyz - fPosC);
+            // compute light vector in camera frame
+            if (!uLight[i].isDirectional) 
+                L = normalize((mViewNormals * vec4(uLight[i].pos, 0.0)).xyz);
+            else
+                L = normalize((mView * vec4(uLight[i].pos, 0.0)).xyz - fPosC);
 
-        // compute normal in camera frame
-        vec3 N = normalize(fNormal);
+            // compute normal in camera frame
+            vec3 N = normalize(fNormal);
 
-        // compute the view vector
-        vec3 V = normalize(-fPosC); // perspective projection
+            // compute the view vector
+            vec3 V = normalize(-fPosC); // perspective projection
 
-        vec3 R = reflect(-L,N);
+            vec3 R = reflect(-L,N);
 
-        float diffuseFactor = max( dot(L,N), 0.0 );
-        vec3 diffuse = diffuseFactor * diffuseColor;
+            float diffuseFactor = max( dot(L,N), 0.0 );
+            vec3 diffuse = diffuseFactor * diffuseColor;
 
-        float specularFactor = pow( max(dot(R,V), 0.0), uMaterial.shininess );
-        vec3 specular = specularFactor * specularColor;
+            float specularFactor = pow( max(dot(R,V), 0.0), uMaterial.shininess );
+            vec3 specular = specularFactor * specularColor;
 
-        // add the 3 components to the Illumination model
-        // (ambient, diffuse, specular)
+            // add the 3 components to the Illumination model
+            // (ambient, diffuse, specular)
 
-        illumModel += vec4(ambientColor + diffuse + specular, 1.0);
+            illumModel += vec3(ambientColor + diffuse + specular);
+        }
+
+        
     }
 
-    gl_FragColor = illumModel;
+    gl_FragColor = vec4(illumModel, 1.0);
 
 }

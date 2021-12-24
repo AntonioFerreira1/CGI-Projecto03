@@ -1,5 +1,5 @@
 import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from "../../libs/utils.js";
-import { ortho, lookAt, flatten, mult, normalMatrix, inverse, vec3, vec4, add, scale, perspective  } from "../../libs/MV.js";
+import { ortho, lookAt, flatten, mult, normalMatrix, inverse, vec3, vec4, add, scale, perspective, transpose  } from "../../libs/MV.js";
 import {modelView, loadMatrix, multRotationX, multRotationY, multRotationZ, multScale, multTranslation, popMatrix, pushMatrix} from "../../libs/stack.js";
 
 import * as dat from '../../libs/dat.gui.module.js';
@@ -127,7 +127,7 @@ function setup(shaders)
     function uploadModelView(){
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
 
-        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mNormals"), false, flatten(inverse(transpose(modelView()))));
     }
 
     const gui = new dat.GUI();
@@ -203,7 +203,7 @@ function setup(shaders)
                 position.add(light, "z");
                 position.addColor(light, "ambient");
                 position.addColor(light, "diffuse");
-                position.addColor(light, "specular");
+                position.addColor(light, "specular")
                 position.add(light, "directional");
                 position.add(light, "active");
         }
@@ -231,13 +231,7 @@ function setup(shaders)
             switch(shape.object) {
                 case 's': SPHERE.draw(gl, program, gl.TRIANGLES); break;
                 case 'c': CUBE.draw(gl, program, gl.TRIANGLES); break;
-                case 't':
-                    //pushMatrix();
-                        //multTranslation([0, -0.3, 0]);
-                        //uploadModelView();
-                        TORUS.draw(gl, program, gl.TRIANGLES);
-                    //popMatrix();
-                    break;
+                case 't': TORUS.draw(gl, program, gl.TRIANGLES); break;
                 case 'cy': CYLINDER.draw(gl, program, gl.TRIANGLES); break;
                 case 'p': PYRAMID.draw(gl, program, gl.TRIANGLES); break;
                 default: break;
@@ -258,6 +252,9 @@ function setup(shaders)
 
         gl.useProgram(program);
 
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mView"), false, flatten(mView));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mViewNormals"), false, flatten(inverse(transpose(mView))));
+        
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
 
         gl.uniform3fv(uKa, vec3(material.Ka[0]/MAX_RGB, material.Ka[1]/MAX_RGB, material.Ka[2]/MAX_RGB));
@@ -265,7 +262,30 @@ function setup(shaders)
         gl.uniform3fv(uKs, vec3(material.Ks[0]/MAX_RGB, material.Ks[1]/MAX_RGB, material.Ks[2]/MAX_RGB));
         gl.uniform1f(uShininess, material.shininess);
 
-       
+        if(lightsArray.length > 0) {
+            const uNLights = gl.getUniformLocation(program, "uNLights");
+
+            const uIPos = gl.getUniformLocation(program, "uLight[0].pos");
+    
+            const uIa = gl.getUniformLocation(program, "uLight[0].Ia");
+            const uId = gl.getUniformLocation(program, "uLight[0].Id");
+            const uIs = gl.getUniformLocation(program, "uLight[0].Is");
+    
+            const uDir = gl.getUniformLocation(program, "uLight[0].isDirectional");
+            const uActive = gl.getUniformLocation(program, "uLight[0].isActive");
+    
+            gl.uniform1i(uNLights, lightsArray.length);
+
+            gl.uniform3f(uIPos, lightsArray[0].x, lightsArray[0].y, lightsArray[0].z);
+    
+            gl.uniform3fv(uIa, lightsArray[0].ambient);
+            gl.uniform3fv(uId, lightsArray[0].diffuse);
+            gl.uniform3fv(uIs, lightsArray[0].specular);
+    
+            (lightsArray[0].directional) ? gl.uniform1i(uDir, 1) : gl.uniform1i(uDir, 0);
+            (lightsArray[0].active) ? gl.uniform1i(uActive, 1) : gl.uniform1i(uActive, 0);
+        }
+        
 
         pushMatrix();
             drawBase();
@@ -275,13 +295,6 @@ function setup(shaders)
         popMatrix();
     }
     
-    /*for (let i = 0; i < lightsArray.length; i++) {
-        const uLightPos = gl.get
-        const uIa = gl.getUniformLocation(program, "uLight["+i+"].Ia");
-        const uId = gl.getUniformLocation(program, "uLight["+i+"].Ia");
-        const uIs = gl.getUniformLocation(program, "uLight["+i+"].Ia");
-        const 
-    }*/
 
 }
 
