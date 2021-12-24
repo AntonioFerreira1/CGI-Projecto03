@@ -18,18 +18,17 @@ struct MaterialInfo {
     float shininess;
 };
 
-attribute vec4 vNormal; // vertex normal in modelling coordinates
-
 uniform int uNLights; // Effective number of lights used
 
 uniform LightInfo uLight[MAX_LIGHTS]; // The array of lights present in the scene
 uniform MaterialInfo uMaterial;  // The material of the object being drawn
 
 uniform mat4 mViewNormals; // view transformation (for vectors)
-uniform mat4 mNormals; // model-view transformation for normals
+
 uniform mat4 mView; // view transformation (for points)
 
-varying fPosC;
+varying vec3 fPosC; 
+varying vec3 fNormal;
 
 
 void main() {
@@ -50,13 +49,12 @@ void main() {
 
         // compute light vector in camera frame
         if (!uLight[i].isDirectional) 
-            L = normalize((mViewNormals * uLight[i].pos).xyz);
+            L = normalize((mViewNormals * vec4(uLight[i].pos, 0.0)).xyz);
         else
-            L = normalize((mView * uLight[i].pos).xyz - fPosC);
-«
+            L = normalize((mView * vec4(uLight[i].pos, 0.0)).xyz - fPosC);
 
         // compute normal in camera frame
-        vec3 N = normalize((mNormals * vNormal).xyz);
+        vec3 N = normalize(fNormal);
 
         // compute the view vector
         vec3 V = normalize(-fPosC); // perspective projection
@@ -66,8 +64,8 @@ void main() {
         float diffuseFactor = max( dot(L,N), 0.0 );
         vec3 diffuse = diffuseFactor * diffuseColor;
 
-        float specularFactor = pow( max(dot(N,H), 0.0), uMaterial.shininess );
-        specular = specularFactor * specularColor;
+        float specularFactor = pow( max(dot(R,V), 0.0), uMaterial.shininess );
+        vec3 specular = specularFactor * specularColor;
 
         // add the 3 components to the Illumination model
         // (ambient, diffuse, specular)

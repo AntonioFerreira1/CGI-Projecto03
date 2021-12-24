@@ -126,6 +126,8 @@ function setup(shaders)
 
     function uploadModelView(){
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
+
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
     }
 
     const gui = new dat.GUI();
