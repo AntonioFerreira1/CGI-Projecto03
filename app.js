@@ -18,8 +18,6 @@ import * as PYRAMID from '../../libs/pyramid.js';
 /** @type WebGLRenderingContext */
 let gl;
 
-let time = 0;           // Global simulation time in days
-let speed = 1/60.0;     // Speed (how many days added to time on each render pass
 let mView;
 
 const MAX_RGB = 255;
@@ -76,15 +74,10 @@ function setup(shaders)
 
     let mProjection = perspective(cam.fovy, aspect, cam.near, cam.far);
 
-    mView = lookAt(cam.eye, cam.at, cam.up);
-    loadMatrix(mView);
-
     resize_canvas();
     window.addEventListener("resize", resize_canvas);
 
-    gl.clearColor(0.71875, 0.83984375, 0.91015625, 1.0);
-
-    const fColor = gl.getUniformLocation(program, "fColor");
+    gl.clearColor(0.2, 0.2, 0.2, 1.0);
 
     const uKa = gl.getUniformLocation(program, "uMaterial.Ka");
     const uKd = gl.getUniformLocation(program, "uMaterial.Kd");
@@ -117,7 +110,7 @@ function setup(shaders)
 
     function uploadModelView(){
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
-        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mNormals"), false, flatten(inverse(transpose(modelView()))));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mNormals"), false, flatten(normalMatrix(modelView())));
     }
 
     const gui = new dat.GUI();
@@ -140,25 +133,25 @@ function setup(shaders)
         cameraFolder.open();
 
     const eyeFolder = cameraFolder.addFolder("Eye");
-        eyeFolder.add(cam.eye, "0");
-        eyeFolder.add(cam.eye, "1");
-        eyeFolder.add(cam.eye, "2");
+        eyeFolder.add(cam.eye, "0").step(0.1);
+        eyeFolder.add(cam.eye, "1").step(0.1);
+        eyeFolder.add(cam.eye, "2").step(0.1);
         eyeFolder.open();
 
     const atFolder = cameraFolder.addFolder("At");
-        atFolder.add(cam.at, "0");
-        atFolder.add(cam.at, "1");
-        atFolder.add(cam.at, "2");
+        atFolder.add(cam.at, "0").step(0.1);
+        atFolder.add(cam.at, "1").step(0.1);
+        atFolder.add(cam.at, "2").step(0.1);
         atFolder.open();
 
     const upFolder = cameraFolder.addFolder("Up");
-        upFolder.add(cam.up, "0", -1, 1);
-        upFolder.add(cam.up, "1", -1, 1);
-        upFolder.add(cam.up, "2", -1, 1);
+        upFolder.add(cam.up, "0", -1, 1).step(0.1);
+        upFolder.add(cam.up, "1", -1, 1).step(0.1);
+        upFolder.add(cam.up, "2", -1, 1).step(0.1);
         upFolder.open();
 
     const lightsFolder = gui.addFolder("Lights");
-        let addLightButton = { Add:addLight}
+        let addLightButton = { Add:addLight };
         lightsFolder.add(addLightButton, "Add");
         lightsFolder.open();
 
@@ -181,32 +174,43 @@ function setup(shaders)
     /**
      * Creates a new light adding it to the GUI
      */
-    function addLight(event) {
+    function addLight() {
         if (lightsArray.length < MAX_LIGHTS) {
             let light = {
-                x: 0,
-                y: 0,
-                z: 0,
-                ambient: [0, 0, 0],
-                diffuse: [0, 0, 0],
-                specular: [0, 0, 0],
+                x: 0.0,
+                y: 1.0,
+                z: 0.0,
+                ambient: [MAX_RGB, MAX_RGB, MAX_RGB],
+                diffuse: [MAX_RGB, MAX_RGB, MAX_RGB],
+                specular: [MAX_RGB, MAX_RGB, MAX_RGB],
                 directional : false,
                 active: true
             };
 
             lightsArray.push(light);
 
+
+
             const newLight = lightsFolder.addFolder("Light" + lightsArray.length);
 
-            const position = newLight.addFolder("position");
-                position.add(light, "x");
-                position.add(light, "y");
-                position.add(light, "z");
-                position.addColor(light, "ambient");
-                position.addColor(light, "diffuse");
-                position.addColor(light, "specular")
-                position.add(light, "directional");
-                position.add(light, "active");
+                let removeLightButton = { RemoveLight:function () {
+                    lightsArray.pop();
+                    lightsFolder.removeFolder(newLight);
+                }};
+                newLight.add(removeLightButton, "RemoveLight");
+
+                const position = newLight.addFolder("position");
+                    position.add(light, "x");
+                    position.add(light, "y");
+                    position.add(light, "z");
+
+                newLight.addColor(light, "ambient");
+                newLight.addColor(light, "diffuse");
+                newLight.addColor(light, "specular")
+                newLight.add(light, "directional");
+                newLight.add(light, "active");
+
+                position.open();
         }
     }
 
@@ -267,7 +271,7 @@ function setup(shaders)
         gl.useProgram(program);
 
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mView"), false, flatten(mView));
-        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mViewNormals"), false, flatten(inverse(transpose(mView))));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, "mViewNormals"), false, flatten(normalMatrix(mView)));
         
         gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
 
@@ -298,8 +302,16 @@ function setup(shaders)
 
             (lightsArray[i].directional) ? gl.uniform1i(uDir, 1) : gl.uniform1i(uDir, 0);
             (lightsArray[i].active) ? gl.uniform1i(uActive, 1) : gl.uniform1i(uActive, 0);
+
+
+            gl.useProgram(programLights);
+
+            const uLightColor = gl.getUniformLocation(programLights, "uColor")
+
+            gl.uniform3fv(uLightColor, vec3(lightsArray[i].specular[0]/MAX_RGB, lightsArray[i].specular[1]/MAX_RGB, lightsArray[i].specular[2]/MAX_RGB));
         }
         
+        gl.useProgram(program);
 
         pushMatrix();
             drawBase();
@@ -312,8 +324,10 @@ function setup(shaders)
         gl.uniformMatrix4fv(gl.getUniformLocation(programLights, "mModelView"), false, flatten(modelView()));
         gl.uniformMatrix4fv(gl.getUniformLocation(programLights, "mProjection"), false, flatten(mProjection));
 
-        drawLights();
 
+        if (options.showLights) {
+            drawLights();
+        }
 
     }
     
