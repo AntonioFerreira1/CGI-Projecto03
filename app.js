@@ -276,28 +276,28 @@ function setup(shaders)
         gl.uniform3fv(uKs, vec3(material.Ks[0]/MAX_RGB, material.Ks[1]/MAX_RGB, material.Ks[2]/MAX_RGB));
         gl.uniform1f(uShininess, material.shininess);
 
-        if(lightsArray.length > 0) {
+        for(let i = 0; i < lightsArray.length; i++){
             const uNLights = gl.getUniformLocation(program, "uNLights");
 
-            const uIPos = gl.getUniformLocation(program, "uLight[0].pos");
-    
-            const uIa = gl.getUniformLocation(program, "uLight[0].Ia");
-            const uId = gl.getUniformLocation(program, "uLight[0].Id");
-            const uIs = gl.getUniformLocation(program, "uLight[0].Is");
-    
-            const uDir = gl.getUniformLocation(program, "uLight[0].isDirectional");
-            const uActive = gl.getUniformLocation(program, "uLight[0].isActive");
-    
+            const uIPos = gl.getUniformLocation(program, "uLight[" + i + "].pos");
+
+            const uIa = gl.getUniformLocation(program, "uLight[" + i + "].Ia");
+            const uId = gl.getUniformLocation(program, "uLight[" + i + "].Id");
+            const uIs = gl.getUniformLocation(program, "uLight[" + i + "].Is");
+
+            const uDir = gl.getUniformLocation(program, "uLight[" + i + "].isDirectional");
+            const uActive = gl.getUniformLocation(program, "uLight[" + i + "].isActive");
+
             gl.uniform1i(uNLights, lightsArray.length);
 
-            gl.uniform3f(uIPos, lightsArray[0].x, lightsArray[0].y, lightsArray[0].z);
-    
-            gl.uniform3fv(uIa, lightsArray[0].ambient);
-            gl.uniform3fv(uId, lightsArray[0].diffuse);
-            gl.uniform3fv(uIs, lightsArray[0].specular);
-    
-            (lightsArray[0].directional) ? gl.uniform1i(uDir, 1) : gl.uniform1i(uDir, 0);
-            (lightsArray[0].active) ? gl.uniform1i(uActive, 1) : gl.uniform1i(uActive, 0);
+            gl.uniform3f(uIPos, lightsArray[i].x, lightsArray[i].y, lightsArray[i].z);
+
+            gl.uniform3f(uIa, lightsArray[i].ambient[0]/MAX_RGB, lightsArray[i].ambient[1]/MAX_RGB, lightsArray[i].ambient[2]/MAX_RGB);
+            gl.uniform3f(uId, lightsArray[i].diffuse[0]/MAX_RGB, lightsArray[i].diffuse[1]/MAX_RGB, lightsArray[i].diffuse[2]/MAX_RGB);
+            gl.uniform3f(uIs, lightsArray[i].specular[0]/MAX_RGB, lightsArray[i].specular[1]/MAX_RGB, lightsArray[i].specular[2]/MAX_RGB);
+
+            (lightsArray[i].directional) ? gl.uniform1i(uDir, 1) : gl.uniform1i(uDir, 0);
+            (lightsArray[i].active) ? gl.uniform1i(uActive, 1) : gl.uniform1i(uActive, 0);
         }
         
 
