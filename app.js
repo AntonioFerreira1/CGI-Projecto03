@@ -166,7 +166,7 @@ function setup(shaders)
     materialFolder.addColor(material, "Kd");
     materialFolder.addColor(material, "Ks");
 
-    materialFolder.add(material, "shininess");
+    materialFolder.add(material, "shininess").min(1);
 
     materialFolder.open();
 
