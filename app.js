@@ -244,6 +244,12 @@ function setup(shaders)
                 
                 multTranslation([lightsArray[i].x, lightsArray[i].y, lightsArray[i].z]);
                 multScale([0.05, 0.05, 0.05]);
+                
+                gl.useProgram(programLights);
+
+                const uLightColor = gl.getUniformLocation(programLights, "uColor")
+
+                gl.uniform3fv(uLightColor, vec3(lightsArray[i].specular[0]/MAX_RGB, lightsArray[i].specular[1]/MAX_RGB, lightsArray[i].specular[2]/MAX_RGB));
                 gl.uniformMatrix4fv(gl.getUniformLocation(programLights, "mModelView"), false, flatten(modelView()));   
                 SPHERE.draw(gl, programLights, gl.TRIANGLES);
                 
@@ -296,13 +302,6 @@ function setup(shaders)
 
             (lightsArray[i].directional) ? gl.uniform1i(uDir, 1) : gl.uniform1i(uDir, 0);
             (lightsArray[i].active) ? gl.uniform1i(uActive, 1) : gl.uniform1i(uActive, 0);
-
-
-            gl.useProgram(programLights);
-
-            const uLightColor = gl.getUniformLocation(programLights, "uColor")
-
-            gl.uniform3fv(uLightColor, vec3(lightsArray[i].specular[0]/MAX_RGB, lightsArray[i].specular[1]/MAX_RGB, lightsArray[i].specular[2]/MAX_RGB));
         }
         
         gl.useProgram(program);
