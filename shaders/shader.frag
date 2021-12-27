@@ -54,7 +54,6 @@ void main() {
             else
                 L = normalize((mView * vec4(uLight[i].pos, 0.0)).xyz - fPosC);
 
-            L = normalize(L);
 
             // compute normal in camera frame
             vec3 N = normalize(fNormal);
