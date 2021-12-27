@@ -193,12 +193,6 @@ function setup(shaders)
 
             const newLight = lightsFolder.addFolder("Light" + lightsArray.length);
 
-                let removeLightButton = { RemoveLight:function () {
-                    lightsArray.pop();
-                    lightsFolder.removeFolder(newLight);
-                }};
-                newLight.add(removeLightButton, "RemoveLight");
-
                 const position = newLight.addFolder("position");
                     position.add(light, "x");
                     position.add(light, "y");
